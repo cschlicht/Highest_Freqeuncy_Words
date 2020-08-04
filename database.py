@@ -11,7 +11,7 @@ import psycopg2
 # 5. Close database connection
 
 def create_table():
-    conn = psycopg2.connect("dbname='testdatabase' user = 'postgres' password = '$T@rlight12' host = 'localhost' port = '5432' " )
+    conn = psycopg2.connect("dbname='testdatabase' user = 'postgres' password = 'database123' host = 'localhost' port = '5432' " )
 
     cur = conn.cursor()
 
