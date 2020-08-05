@@ -11,7 +11,7 @@ import psycopg2
 # 5. Close database connection
 
 def create_table():
-    conn = psycopg2.connect("dbname='testdatabase' user = 'postgres' password = 'database123' host = 'localhost' port = '5432' " )
+    conn = psycopg2.connect("dbname='article_words' user = 'postgres' password = 'database123' host = 'localhost' port = '5432' " )
 
     cur = conn.cursor()
 
@@ -22,7 +22,7 @@ def create_table():
     conn.close()
 
 def insert(word): 
-    conn = psycopg2.connect("dbname='testdatabase' user = 'postgres' password = '$T@rlight12' host = 'localhost' port = '5432' " )
+    conn = psycopg2.connect("dbname='article_words' user = 'postgres' password = 'database123' host = 'localhost' port = '5432' " )
     cur = conn.cursor()
     cur.execute("INSERT INTO words VALUES (%s)", (word,))
     conn.commit()
@@ -31,7 +31,7 @@ def insert(word):
 
 
 def view():
-    conn = psycopg2.connect("dbname='testdatabase' user = 'postgres' password = '$T@rlight12' host = 'localhost' port = '5432' " )
+    conn = psycopg2.connect("dbname='article_words' user = 'postgres' password = 'database123' host = 'localhost' port = '5432' " )
     cur = conn.cursor()
     cur.execute("SELECT * FROM words")
     rows = cur.fetchall()
@@ -40,7 +40,7 @@ def view():
     return rows
 
 def viewOccurences():
-    conn = psycopg2.connect("dbname='testdatabase' user = 'postgres' password = '$T@rlight12' host = 'localhost' port = '5432' " )
+    conn = psycopg2.connect("dbname='article_words' user = 'postgres' password = 'database123' host = 'localhost' port = '5432' " )
     cur = conn.cursor()
     cur.execute("SELECT word, COUNT(*) FROM words GROUP BY word")
     rows = cur.fetchall()
@@ -49,7 +49,7 @@ def viewOccurences():
     return rows
 
 def deleteAll():
-    conn = psycopg2.connect("dbname='testdatabase' user = 'postgres' password = '$T@rlight12' host = 'localhost' port = '5432' " )
+    conn = psycopg2.connect("dbname='article_words' user = 'postgres' password = 'database123' host = 'localhost' port = '5432' " )
     cur = conn.cursor()
     cur.execute("TRUNCATE TABLE words")
     conn.commit()

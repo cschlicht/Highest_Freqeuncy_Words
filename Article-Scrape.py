@@ -15,21 +15,25 @@ from bokeh.plotting import figure
 from bokeh.transform import dodge
 from bokeh.io import curdoc, show
 from bokeh.models import ColumnDataSource, Grid, LinearAxis, Plot, VBar
-from nltk.corpus import wordnet as wn
-import nltk
+from wordcloud import WordCloud
+import matplotlib.pyplot as plt
+
+
 
 option = webdriver.ChromeOptions()
 option.add_argument("- incognito")
+option.add_argument('--ignore-certificate-errors')
+option.add_argument('--ignore-ssl-errors')
 
 
-browser = webdriver.Chrome(executable_path= r"C:\Users\servi\OneDrive\Documents\Side_Projects\Article_Scraper\chromedriver", chrome_options=option)
+browser = webdriver.Chrome(executable_path= r"C:\Users\servi\Documents\SideProjects\Highest_Freqeuncy_Words\chromedriver", chrome_options=option)
 
 
 #Get the desired website
 browser.get("https://www.nytimes.com/topic/destination/united-states")
 
-#Wait 10 seconds for the page to load
-time.sleep(10)
+#Wait 5 seconds for the page to load
+time.sleep(5)
 
 #try:
   #  WebDriverWait(browser, timeout).until(EC.visibility_of_element_located((By.XPATH, '//img[@class="avatar width-full rounded-2"]')))
@@ -67,13 +71,14 @@ titles_2 = [x.text for x in titles_cnn]
 
 
 
+browser.get("https://www.usatoday.com/news/")
 
+titles_usa = browser.find_elements_by_xpath('//div[@class="gnt_m gnt_m_flm"]')
 
-
+titles_3 = [x.text for x in titles_usa]
 
 
 database.deleteAll()
-
 
 
 def isValid(str):
@@ -203,7 +208,6 @@ def isValid(str):
         return False
     if(str.lower() == "we're"):
         return False
-
     if(str.lower() == "'that's"):
         return False
     if(str.lower() == "here's"):
@@ -214,15 +218,48 @@ def isValid(str):
 words = []
 l = []
 
+#clean up text
+for x in range(0, len(titles)):
+    titles[x] = titles[x].replace("\n", " ")
+    titles[x] = titles[x].replace("?", "")
+    titles[x] = titles[x].replace("-", "")
+    titles[x] = titles[x].replace("'", "")
+    titles[x] = titles[x].replace(".", "")
+
+
 for x in range(0, len(titles)):
     words.append(titles[x].split(" "))
     
+#clean up the text
 for x in range(0, len(titles_2)):
-    words.append(titles[x].split(" "))
+    titles_2[x] = titles_2[x].replace("\n", " ")
+    titles_2[x] = titles_2[x].replace("?", "")
+    titles_2[x] = titles_2[x].replace("-", "")
+    titles_2[x] = titles_2[x].replace("'", "")
+    titles_2[x] = titles_2[x].replace(".", "")
+
+for x in range(0, len(titles_2)):
+    words.append(titles_2[x].split(" "))
+
+
+#usa has some formatting issues when you webscrap the titles so these lines fix it
+for x in range(0, len(titles_3)):
+    titles_3[x] = titles_3[x].replace("\n", " ")
+    titles_3[x] = titles_3[x].replace("?", "")
+    titles_3[x] = titles_3[x].replace("-", " ")
+    titles_3[x] = titles_3[x].replace("'", "")
+    titles_3[x] = titles_3[x].replace(".", "")
+
+for x in range(0, len(titles_3)):
+    words.append(titles_3[x].split(" "))
+    
+print(words)
+
 
 for y in words:
     for n in y:
         database.insert(n) 
+
 
 
 count = 0
@@ -261,6 +298,22 @@ y = df["Occurrences:"]
 
 
 #print(l)
+
+database_words = database.viewOccurences()
+text = " ".join([(k[0] + " ")*k[1] for k in database_words])
+
+
+
+# lower max_font_size
+wordcloud = WordCloud(max_font_size=80, collocations = False, height= 700, width = 700 ).generate(text)
+plt.figure()
+plt.imshow(wordcloud, interpolation="bilinear")
+plt.axis("off")
+plt.show()
+
+
+browser.close()
+
 
 p = figure(x_range=x, plot_height=500, plot_width = 35000, title="Word Occurences",
            toolbar_location=None, tools="")
