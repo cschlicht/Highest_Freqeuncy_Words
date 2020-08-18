@@ -60,7 +60,7 @@ def deleteAll():
 
 
 
-create_table()
+create_table() #create table, if table already exists, this does nothing
 #delete("Glass Bottle")
 #updateQuantity(15, "Glass Bottle")
 #print(viewOccurences())

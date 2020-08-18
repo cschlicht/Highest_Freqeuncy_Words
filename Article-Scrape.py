@@ -8,18 +8,18 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.keys import Keys
 import pandas
 import database
-from bokeh.core.properties import value
-from bokeh.io import show, output_file
-from bokeh.models import ColumnDataSource
-from bokeh.plotting import figure
-from bokeh.transform import dodge
-from bokeh.io import curdoc, show
-from bokeh.models import ColumnDataSource, Grid, LinearAxis, Plot, VBar
+#from bokeh.core.properties import value
+#from bokeh.io import show, output_file
+#from bokeh.models import ColumnDataSource
+#from bokeh.plotting import figure
+#from bokeh.transform import dodge
+#from bokeh.io import curdoc, show
+#from bokeh.models import ColumnDataSource, Grid, LinearAxis, Plot, VBar
 from wordcloud import WordCloud
 import matplotlib.pyplot as plt
 
 
-
+#set up options for our chrome browser
 option = webdriver.ChromeOptions()
 option.add_argument("- incognito")
 option.add_argument('--ignore-certificate-errors')
@@ -32,23 +32,17 @@ browser = webdriver.Chrome(executable_path= r"C:\Users\servi\Documents\SideProje
 #Get the desired website
 browser.get("https://www.nytimes.com/topic/destination/united-states")
 
-#Wait 5 seconds for the page to load
-time.sleep(5)
+#Wait 3 seconds for the page to load
+time.sleep(3)
 
-#try:
-  #  WebDriverWait(browser, timeout).until(EC.visibility_of_element_located((By.XPATH, '//img[@class="avatar width-full rounded-2"]')))
-#except TimeoutException:
- #   print('Timed out waiting for page to load')
-  #  browser.quit()
-
+#finds and clicks the show more button the max amount of times the website will allow so we can get the most titles possible
 for y in range(0, 9):
     #Finding the show more button
     SM_Button = browser.find_elements_by_xpath('//button[text() = "Show More"]')
     #Click show more button
     SM_Button[0].click()
     #Allow time for website to load the content into the HTML
-    time.sleep(5)
-
+    time.sleep(3)
 
 
 
@@ -62,6 +56,7 @@ titles = [x.text for x in titles_element]
 #print(titles, '\n')
 
 
+#extract titles from cnn
 browser.get("https://www.cnn.com/specials/last-50-stories")
 
 titles_cnn = browser.find_elements_by_xpath('//span[@class="cd__headline-text"]')
@@ -70,17 +65,17 @@ titles_2 = [x.text for x in titles_cnn]
 
 
 
-
+#extract titles from usatoday
 browser.get("https://www.usatoday.com/news/")
 
 titles_usa = browser.find_elements_by_xpath('//div[@class="gnt_m gnt_m_flm"]')
 
 titles_3 = [x.text for x in titles_usa]
 
-
+#delete all data in the database for a fresh start
 database.deleteAll()
 
-
+#invalid words
 def isValid(str):
     if(str.lower() == "the"):
         return False
@@ -218,7 +213,7 @@ def isValid(str):
 words = []
 l = []
 
-#clean up text
+#clean up the text
 for x in range(0, len(titles)):
     titles[x] = titles[x].replace("\n", " ")
     titles[x] = titles[x].replace("?", "")
@@ -258,16 +253,18 @@ print(words)
 
 for y in words:
     for n in y:
+        if isValid(n[0]) == False: #if the word isn't a valid word, skip it. this prevents the bad words from entering the database in teh first place
+                                   #(potential time saver) 
+            continue
         database.insert(n) 
 
 
 
-count = 0
+#count = 0 
 for n in database.viewOccurences():
     d = {}
     
-    if isValid(n[0]) == False:
-        continue
+    
     d["Word:"] = n[0]
     d["Occurrences:"] = n[1]
     l.append(d)
@@ -276,19 +273,10 @@ for n in database.viewOccurences():
       #  break
 
 
-#word = []
-#occurrences = []
-#for n in database.viewOccurrences():
-    
-#    word.append(n[0])
- #   occurrences.append(n[1])
 
-
-#print(len(word))
-#print(occurrences)
 
 l = sorted(l, key = lambda i: i['Occurrences:'], reverse=True)
-print(l)
+#print(l)
 df = pandas.DataFrame(l)
 df.to_csv("data.csv")
 
@@ -297,24 +285,28 @@ x = df["Word:"]
 y = df["Occurrences:"]
 
 
-#print(l)
 
 database_words = database.viewOccurences()
-text = " ".join([(k[0] + " ")*k[1] for k in database_words])
+text = " ".join([(k[0] + " ")*k[1] for k in database_words]) #this must be done for the word cloud to work, essentially turns (word, 3) into word word word
 
 
 
-# lower max_font_size
-wordcloud = WordCloud(max_font_size=80, collocations = False, height= 700, width = 700 ).generate(text)
+
+wordcloud = WordCloud(max_font_size=80, collocations = False, height= 700, width = 700 ).generate(text) 
 plt.figure()
 plt.imshow(wordcloud, interpolation="bilinear")
 plt.axis("off")
 plt.show()
 
-
+#doesn't actually close the entire brower, just the tab that we are on
 browser.close()
+ #TODO: look up a way to close the entire browser for a more streamlined process
+#TODO: find out why its so slow
+#TODO: if you have time, create a system that you can select or type in the word and it returns all the articles with that word in the title
 
 
+#bar graph for words (fuck this, too slow + looks bad)
+r'''
 p = figure(x_range=x, plot_height=500, plot_width = 35000, title="Word Occurences",
            toolbar_location=None, tools="")
 
@@ -327,7 +319,7 @@ output_file("plot.html")
 
 show(p)
 
-
+'''
 
 
 
